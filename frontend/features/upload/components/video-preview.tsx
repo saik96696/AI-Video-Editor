@@ -1,109 +1,118 @@
 "use client";
 
 import Image from "next/image";
-import { Film, Clock3, HardDrive, Play, Trash2, Sparkles } from "lucide-react";
+import {
+  Clock,
+  HardDrive,
+  Monitor,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+
 import type { VideoMetadata } from "../types/video";
 
-type VideoPreviewProps = {
+interface VideoPreviewProps {
   metadata: VideoMetadata;
-};
+  onRemove: () => void;
+  onGenerateCaptions: () => void;
+}
 
-function formatDuration(seconds: number) {
+function formatDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
 
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
+function formatFileSize(bytes: number): string {
+  const mb = bytes / (1024 * 1024);
+
+  return `${mb.toFixed(2)} MB`;
+}
+
 export default function VideoPreview({
   metadata,
+  onRemove,
+  onGenerateCaptions,
 }: VideoPreviewProps) {
   return (
-    <div className="mt-8 rounded-2xl border bg-card p-6 shadow-md">
-      <div className="flex flex-col gap-8 lg:flex-row">
-        {/* Thumbnail */}
-        <div className="overflow-hidden rounded-xl border bg-muted">
-          <Image
-            src={metadata.thumbnail}
-            alt={metadata.name}
-            width={320}
-            height={180}
-            className="aspect-video h-auto w-full object-cover"
-            priority
-          />
-        </div>
+    <div className="space-y-6">
+      {/* Thumbnail */}
+      <div className="overflow-hidden rounded-xl border">
+        <Image
+          src={metadata.thumbnail}
+          alt={metadata.name}
+          width={1280}
+          height={720}
+          className="h-auto w-full object-cover"
+          priority
+        />
+      </div>
 
-        {/* Details */}
-        <div className="flex flex-1 flex-col justify-between">
-          <div>
-            <h3
-              className="truncate text-xl font-bold"
-              title={metadata.name}
-            >
-              {metadata.name}
-            </h3>
+      {/* File Info */}
+      <div>
+        <h2 className="truncate text-xl font-semibold">
+          {metadata.name}
+        </h2>
 
-            <p className="mt-2 text-sm text-muted-foreground">
-              Video is ready for caption generation.
-            </p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Your video is ready for editing.
+        </p>
+      </div>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
-              <div className="rounded-xl border bg-background p-4">
-                <Film className="mb-3 h-5 w-5 text-primary" />
-
-                <p className="text-xs text-muted-foreground">
-                  Resolution
-                </p>
-
-                <p className="mt-1 font-semibold">
-                  {metadata.width} × {metadata.height}
-                </p>
-              </div>
-
-              <div className="rounded-xl border bg-background p-4">
-                <Clock3 className="mb-3 h-5 w-5 text-primary" />
-
-                <p className="text-xs text-muted-foreground">
-                  Duration
-                </p>
-
-                <p className="mt-1 font-semibold">
-                  {formatDuration(metadata.duration)}
-                </p>
-              </div>
-
-              <div className="rounded-xl border bg-background p-4">
-                <HardDrive className="mb-3 h-5 w-5 text-primary" />
-
-                <p className="text-xs text-muted-foreground">
-                  File Size
-                </p>
-
-                <p className="mt-1 font-semibold">
-                  {(metadata.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-              </div>
-            </div>
+      {/* Metadata */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="rounded-xl border p-4">
+          <div className="mb-2 flex items-center gap-2">
+            <Monitor className="h-5 w-5" />
+            <span className="font-medium">Resolution</span>
           </div>
 
-          {/* Actions */}
-          <div className="mt-8 flex flex-wrap gap-3">
-            <button className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition hover:bg-accent">
-              <Play size={16} />
-              Preview
-            </button>
-
-            <button className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50">
-              <Trash2 size={16} />
-              Remove
-            </button>
-
-            <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90">
-              <Sparkles size={16} />
-              Generate Captions
-            </button>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            {metadata.width} × {metadata.height}
+          </p>
         </div>
+
+        <div className="rounded-xl border p-4">
+          <div className="mb-2 flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            <span className="font-medium">Duration</span>
+          </div>
+
+          <p className="text-sm text-muted-foreground">
+            {formatDuration(metadata.duration)}
+          </p>
+        </div>
+
+        <div className="rounded-xl border p-4">
+          <div className="mb-2 flex items-center gap-2">
+            <HardDrive className="h-5 w-5" />
+            <span className="font-medium">File Size</span>
+          </div>
+
+          <p className="text-sm text-muted-foreground">
+            {formatFileSize(metadata.size)}
+          </p>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-3">
+        <button
+          onClick={onGenerateCaptions}
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+        >
+          <Sparkles className="h-4 w-4" />
+          Generate Captions
+        </button>
+
+        <button
+          onClick={onRemove}
+          className="inline-flex items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-medium transition hover:bg-muted"
+        >
+          <Trash2 className="h-4 w-4" />
+          Remove Video
+        </button>
       </div>
     </div>
   );

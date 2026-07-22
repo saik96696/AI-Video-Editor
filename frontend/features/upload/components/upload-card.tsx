@@ -1,43 +1,64 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 import FileDropzone from "./file-dropzone";
 import VideoPreview from "./video-preview";
+
 import { useVideoMetadata } from "../hooks/use-video-metadata";
 
+import { useProjectStore } from "@/lib/project/project-store";
+
 export default function UploadCard() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const router = useRouter();
 
   const {
     metadata,
-    loading,
     loadVideo,
+    reset,
   } = useVideoMetadata();
 
-  useEffect(() => {
-    if (selectedFile) {
-      loadVideo(selectedFile);
-    }
-  }, [selectedFile, loadVideo]);
+  const { setVideo, updateStatus } = useProjectStore();
+
+  const handleFileSelected = async (file: File) => {
+    await loadVideo(file);
+  };
+
+  const handleRemoveVideo = () => {
+    reset();
+  };
+
+  const handleGenerateCaptions = () => {
+    if (!metadata) return;
+
+    setVideo({
+  id: crypto.randomUUID(),
+  name: metadata.name,
+  size: metadata.size,
+  duration: metadata.duration,
+  width: metadata.width,
+  height: metadata.height,
+  thumbnail: metadata.thumbnail,
+  videoUrl: URL.createObjectURL(metadata.file),
+});
+
+    updateStatus("editing");
+
+    router.push("/editor");
+  };
 
   return (
-    <div className="rounded-xl border bg-card p-8 shadow-sm">
-      <h2 className="mb-6 text-2xl font-bold">
-        Upload Your Video
-      </h2>
-
-      <FileDropzone
-        onFileSelect={setSelectedFile}
-      />
-
-      {loading && (
-        <p className="mt-6 text-muted-foreground">
-          Reading video...
-        </p>
-      )}
-
-      {metadata && (
-        <VideoPreview metadata={metadata} />
+    <div className="mx-auto w-full max-w-5xl rounded-2xl border bg-card p-6 shadow-sm">
+      {!metadata ? (
+        <FileDropzone
+          onFileSelect={handleFileSelected}
+        />
+      ) : (
+        <VideoPreview
+          metadata={metadata}
+          onRemove={handleRemoveVideo}
+          onGenerateCaptions={handleGenerateCaptions}
+        />
       )}
     </div>
   );

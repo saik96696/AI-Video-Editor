@@ -12,7 +12,10 @@ export interface ProjectVideo {
   duration: number;
   width: number;
   height: number;
+
   thumbnail?: string;
+
+  videoUrl: string;
 }
 
 export interface Project {

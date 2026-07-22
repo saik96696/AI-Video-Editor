@@ -58,9 +58,15 @@ export function useVideoMetadata() {
     }
   }, []);
 
+  const reset = useCallback(() => {
+    setMetadata(null);
+    setLoading(false);
+  }, []);
+
   return {
     metadata,
     loading,
     loadVideo,
+    reset,
   };
 }
